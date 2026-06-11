@@ -1,0 +1,7 @@
+com/renan/helloworld/config/S3Config.class
+com/renan/helloworld/HelloWorldApplication.class
+com/renan/helloworld/controller/S3Controller.class
+com/renan/helloworld/controller/S3Controller$MetadataResponse.class
+com/renan/helloworld/service/S3Service$ListResult.class
+com/renan/helloworld/service/S3Service.class
+com/renan/helloworld/HelloController.class
