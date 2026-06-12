@@ -58,7 +58,7 @@ public class S3Controller {
                                 ? meta.contentType()
                                 : MediaType.APPLICATION_OCTET_STREAM_VALUE))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename + "\"")
+                        "inline; filename=\"" + filename + "\"")
                 .body(new InputStreamResource(stream));
     }
 
