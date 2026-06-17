@@ -1,5 +1,10 @@
 /home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/HelloController.java
 /home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/HelloWorldApplication.java
+/home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/config/DynamoDbConfig.java
 /home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/config/S3Config.java
+/home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/controller/ProdutoController.java
 /home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/controller/S3Controller.java
+/home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/model/Produto.java
+/home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/repository/ProdutoRepository.java
+/home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/service/ProdutoService.java
 /home/renan/dev/Portfólio/assurance-curso-aws-cloud/hello-world-aws/src/main/java/com/renan/helloworld/service/S3Service.java
