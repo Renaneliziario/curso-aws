@@ -2,17 +2,17 @@ package com.renan.helloworld.controller;
 
 import com.renan.helloworld.model.Produto;
 import com.renan.helloworld.service.ProdutoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// @RestController = @Controller + @ResponseBody
-// Todos os métodos retornam JSON automaticamente (sem precisar de @ResponseBody em cada um)
 @RestController
-// @RequestMapping define o prefixo da URL para todos os endpoints da classe
 @RequestMapping("/produtos")
+@Tag(name = "Produtos", description = "CRUD de Produtos no DynamoDB")
 public class ProdutoController {
 
     private final ProdutoService service;
@@ -21,37 +21,31 @@ public class ProdutoController {
         this.service = service;
     }
 
-    // POST /produtos — recebe o JSON do corpo da requisição e cria o produto
-    // @RequestBody deserializa o JSON para o objeto Produto automaticamente
-    // ResponseEntity permite controlar o status HTTP — 201 Created é o correto para criação
+    @Operation(summary = "Criar produto", description = "Cria um novo produto no DynamoDB com ID gerado automaticamente")
     @PostMapping
     public ResponseEntity<Produto> criar(@RequestBody Produto produto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(produto));
     }
 
-    // GET /produtos — lista todos os produtos
-    // Retorno direto de List<Produto> usa status 200 OK automaticamente
+    @Operation(summary = "Listar produtos", description = "Retorna todos os produtos da tabela Produtos no DynamoDB")
     @GetMapping
     public List<Produto> listar() {
         return service.listarTodos();
     }
 
-    // GET /produtos/{id} — busca um produto pelo id
-    // @PathVariable captura o valor do {id} da URL
+    @Operation(summary = "Buscar produto por ID", description = "Busca um produto pelo ID no DynamoDB")
     @GetMapping("/{id}")
     public Produto buscar(@PathVariable String id) {
         return service.buscarPorId(id);
     }
 
-    // PUT /produtos/{id} — substitui o produto inteiro pelo id informado
-    // PUT = substituição completa. PATCH seria atualização parcial.
+    @Operation(summary = "Atualizar produto", description = "Substitui os dados do produto pelo ID informado")
     @PutMapping("/{id}")
     public Produto atualizar(@PathVariable String id, @RequestBody Produto produto) {
         return service.atualizar(id, produto);
     }
 
-    // DELETE /produtos/{id} — remove o produto pelo id
-    // 204 No Content = sucesso sem corpo de resposta (padrão REST para DELETE)
+    @Operation(summary = "Deletar produto", description = "Remove o produto do DynamoDB pelo ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id) {
         service.deletar(id);
