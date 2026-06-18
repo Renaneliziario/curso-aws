@@ -74,9 +74,11 @@ public class CepService {
     }
 
     public Endereco buscarEndereco(String cep) {
-        Endereco endereco = enderecoRepository.buscarPorCep(cep);
+        // remove hifen para padronizar a busca
+        String cepSemHifen = cep.replace("-", "");
+        Endereco endereco = enderecoRepository.buscarPorCep(cepSemHifen);
         if (endereco == null) {
-            throw new RuntimeException("CEP não encontrado na base: " + cep);
+            throw new RuntimeException("CEP não encontrado na base: " + cepSemHifen);
         }
         return endereco;
     }

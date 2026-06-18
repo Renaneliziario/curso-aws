@@ -37,11 +37,15 @@ public class ViaCepService {
                 throw new RuntimeException("CEP não encontrado: " + cep);
             }
 
+            // remove o hifen do cep retornado pelo ViaCEP (ex: "01310-100" vira "01310100")
+            // assim o GET funciona com ou sem hifen
+            String cepSemHifen = json.get("cep").asText().replace("-", "");
+
             return new Endereco(
-                    json.get("cep").asText(),
+                    cepSemHifen,
                     json.get("logradouro").asText(),
                     json.get("bairro").asText(),
-                    json.get("localidade").asText(), // no json e "localidade" mas salvo como cidade
+                    json.get("localidade").asText(),
                     json.get("uf").asText()
             );
 

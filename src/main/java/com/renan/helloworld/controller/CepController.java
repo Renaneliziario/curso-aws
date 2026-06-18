@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/cep")
-@Tag(name = "CEP", description = "Envio de CEP para fila SQS e consulta no DynamoDB")
+@Tag(name = "CEP SQS DYNAMODB", description = "Envio de CEP para fila SQS e consulta no DynamoDB")
 public class CepController {
 
     private final CepService cepService;
