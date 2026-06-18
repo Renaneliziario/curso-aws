@@ -1,7 +1,7 @@
-package com.renan.helloworld.controller;
+package com.renan.aws.sqs.cep.controller;
 
-import com.renan.helloworld.model.Endereco;
-import com.renan.helloworld.service.CepService;
+import com.renan.aws.sqs.cep.model.Endereco;
+import com.renan.aws.sqs.cep.service.CepService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +22,7 @@ public class CepController {
         this.cepService = cepService;
     }
 
-    @Operation(
-        summary = "Envia CEP para a fila SQS",
-        description = "Coloca o CEP na fila fila-cep do SQS para processamento assíncrono"
-    )
+    @Operation(summary = "Envia CEP para a fila SQS", description = "Coloca o CEP na fila fila-cep do SQS para processamento assíncrono")
     @PostMapping("/{cep}")
     public ResponseEntity<Map<String, String>> enviar(@PathVariable String cep) {
         cepService.enviarCep(cep);
@@ -37,37 +34,25 @@ public class CepController {
         return ResponseEntity.accepted().body(resposta);
     }
 
-    @Operation(
-        summary = "Processa a fila SQS",
-        description = "Consome os CEPs da fila, consulta o ViaCEP e salva os endereços no DynamoDB"
-    )
+    @Operation(summary = "Processa a fila SQS", description = "Consome os CEPs da fila, consulta o ViaCEP e salva os endereços no DynamoDB")
     @PostMapping("/processar")
     public List<String> processar() {
         return cepService.processarFila();
     }
 
-    @Operation(
-        summary = "Busca endereço por CEP",
-        description = "Lê o endereço salvo no DynamoDB pelo CEP informado"
-    )
+    @Operation(summary = "Busca endereço por CEP", description = "Lê o endereço salvo no DynamoDB pelo CEP informado")
     @GetMapping("/{cep}")
     public Endereco buscar(@PathVariable String cep) {
         return cepService.buscarEndereco(cep);
     }
 
-    @Operation(
-        summary = "Espia a fila SQS",
-        description = "Mostra os CEPs que estão aguardando na fila sem processar"
-    )
+    @Operation(summary = "Espia a fila SQS", description = "Mostra os CEPs que estão aguardando na fila sem processar")
     @GetMapping("/peek")
     public List<String> peek() {
         return cepService.peek();
     }
 
-    @Operation(
-        summary = "Deleta endereço por CEP",
-        description = "Remove o endereço salvo no DynamoDB pelo CEP informado"
-    )
+    @Operation(summary = "Deleta endereço por CEP", description = "Remove o endereço salvo no DynamoDB pelo CEP informado")
     @DeleteMapping("/{cep}")
     public ResponseEntity<Void> deletar(@PathVariable String cep) {
         cepService.deletarEndereco(cep);

@@ -1,4 +1,4 @@
-package com.renan.helloworld.config;
+package com.renan.aws.sqs.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

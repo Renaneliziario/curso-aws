@@ -14,8 +14,8 @@
     <groupId>com.renan</groupId>
     <artifactId>hello-world-aws</artifactId>
     <version>1.0.0</version>
-    <name>hello-world-aws</name>
-    <description>Spring Boot Hello World - Curso AWS Cloud</description>
+    <name>aws-spring-lab</name>
+    <description>Laboratório Spring Boot com AWS — EC2, S3, DynamoDB, SQS, RDS</description>
 
     <properties>
         <java.version>21</java.version>

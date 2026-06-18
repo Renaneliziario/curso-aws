@@ -1,7 +1,7 @@
-package com.renan.helloworld.service;
+package com.renan.aws.sqs.cep.service;
 
-import com.renan.helloworld.model.Endereco;
-import com.renan.helloworld.repository.EnderecoRepository;
+import com.renan.aws.sqs.cep.model.Endereco;
+import com.renan.aws.sqs.cep.repository.EnderecoRepository;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
@@ -26,13 +26,11 @@ public class CepService {
         this.enderecoRepository = enderecoRepository;
     }
 
-    public String enviarCep(String cep) {
-        SendMessageResponse response = sqsClient.sendMessage(SendMessageRequest.builder()
+    public void enviarCep(String cep) {
+        sqsClient.sendMessage(SendMessageRequest.builder()
                 .queueUrl(QUEUE_URL)
                 .messageBody(cep)
                 .build());
-
-        return "CEP enviado para a fila. MessageId: " + response.messageId();
     }
 
     public List<String> processarFila() {
@@ -102,10 +100,11 @@ public class CepService {
     }
 
     public void deletarEndereco(String cep) {
-        Endereco existente = enderecoRepository.buscarPorCep(cep);
+        String cepSemHifen = cep.replace("-", "");
+        Endereco existente = enderecoRepository.buscarPorCep(cepSemHifen);
         if (existente == null) {
-            throw new RuntimeException("CEP não encontrado na base: " + cep);
+            throw new RuntimeException("CEP não encontrado na base: " + cepSemHifen);
         }
-        enderecoRepository.deletar(cep);
+        enderecoRepository.deletar(cepSemHifen);
     }
 }

@@ -1,4 +1,4 @@
-package com.renan.helloworld.service;
+package com.renan.aws.s3.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,16 +15,13 @@ public class S3Service {
 
     private final S3Client s3Client;
 
-    private static final String BUCKET =
-            "curso-s3-213180001857-us-east-2-an";
+    private static final String BUCKET = "curso-s3-213180001857-us-east-2-an";
 
     public S3Service(S3Client s3Client) {
         this.s3Client = s3Client;
     }
 
-    // Upload de arquivo. prefix opcional, ex: "Times/"
     public void upload(MultipartFile file, String prefix) throws IOException {
-
         String key = (prefix == null || prefix.isBlank())
                 ? file.getOriginalFilename()
                 : normalizePrefix(prefix) + file.getOriginalFilename();
@@ -35,36 +32,26 @@ public class S3Service {
                 .contentType(file.getContentType())
                 .build();
 
-        s3Client.putObject(
-                request,
-                software.amazon.awssdk.core.sync.RequestBody
-                        .fromBytes(file.getBytes())
-        );
+        s3Client.putObject(request,
+                software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes()));
     }
 
-    // Lista arquivos e "pastas" (common prefixes) num dado nível.
-    // prefix vazio = raiz do bucket
     public ListResult list(String prefix) {
-
-        String normalized = (prefix == null || prefix.isBlank())
-                ? ""
-                : normalizePrefix(prefix);
+        String normalized = (prefix == null || prefix.isBlank()) ? "" : normalizePrefix(prefix);
 
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(BUCKET)
                 .prefix(normalized)
-                .delimiter("/")   // faz o S3 agrupar "pastas"
+                .delimiter("/")
                 .build();
 
         ListObjectsV2Response response = s3Client.listObjectsV2(request);
 
-        // Pastas (subprefixos)
         List<String> folders = response.commonPrefixes()
                 .stream()
                 .map(CommonPrefix::prefix)
                 .toList();
 
-        // Arquivos (ignora a própria pasta listada como objeto vazio)
         List<String> files = new ArrayList<>();
         for (S3Object obj : response.contents()) {
             if (!obj.key().equals(normalized)) {
@@ -75,24 +62,18 @@ public class S3Service {
         return new ListResult(folders, files);
     }
 
-    // Obtém os bytes do arquivo
     public ResponseInputStream<GetObjectResponse> getFile(String key) {
-        GetObjectRequest request = GetObjectRequest.builder()
+        return s3Client.getObject(GetObjectRequest.builder()
                 .bucket(BUCKET)
                 .key(key)
-                .build();
-
-        return s3Client.getObject(request);
+                .build());
     }
 
-    // Obtém metadados do arquivo (tamanho, content-type, etc.) sem baixar
     public HeadObjectResponse getMetadata(String key) {
-        HeadObjectRequest request = HeadObjectRequest.builder()
+        return s3Client.headObject(HeadObjectRequest.builder()
                 .bucket(BUCKET)
                 .key(key)
-                .build();
-
-        return s3Client.headObject(request);
+                .build());
     }
 
     private String normalizePrefix(String prefix) {

@@ -1,6 +1,6 @@
-package com.renan.helloworld.repository;
+package com.renan.aws.sqs.cep.repository;
 
-import com.renan.helloworld.model.Endereco;
+import com.renan.aws.sqs.cep.model.Endereco;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -26,6 +26,8 @@ public class EnderecoRepository {
                 .build());
     }
 
+    // getItem busca direto pela chave - muito mais rapido que fazer scan
+    // aqui o cep e a partition key entao faz sentido buscar assim
     public Endereco buscarPorCep(String cep) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("cep", AttributeValue.fromS(cep));

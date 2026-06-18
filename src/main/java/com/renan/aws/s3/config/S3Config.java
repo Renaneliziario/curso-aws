@@ -1,20 +1,18 @@
-package com.renan.helloworld.config;
+package com.renan.aws.s3.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
-public class DynamoDbConfig {
+public class S3Config {
 
     @Bean
-    public DynamoDbClient dynamoDbClient() {
-        return DynamoDbClient.builder()
+    public S3Client s3Client() {
+        return S3Client.builder()
                 .region(Region.US_EAST_2)
-                // DefaultCredentialsProvider pega as credenciais automaticamente
-                // quando roda na EC2, ele usa a Role IAM da instancia (sem precisar colocar chave)
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
     }

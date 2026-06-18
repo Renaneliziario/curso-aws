@@ -1,7 +1,7 @@
-package com.renan.helloworld.controller;
+package com.renan.aws.dynamodb.produto.controller;
 
-import com.renan.helloworld.model.Produto;
-import com.renan.helloworld.service.ProdutoService;
+import com.renan.aws.dynamodb.produto.model.Produto;
+import com.renan.aws.dynamodb.produto.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;

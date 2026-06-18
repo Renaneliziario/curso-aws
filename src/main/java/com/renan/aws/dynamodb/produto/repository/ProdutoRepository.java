@@ -1,6 +1,6 @@
-package com.renan.helloworld.repository;
+package com.renan.aws.dynamodb.produto.repository;
 
-import com.renan.helloworld.model.Produto;
+import com.renan.aws.dynamodb.produto.model.Produto;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -22,6 +22,8 @@ public class ProdutoRepository {
         this.dynamoDb = dynamoDb;
     }
 
+    // no dynamo nao tem INSERT separado de UPDATE
+    // o putItem salva o item, se o id ja existir ele substitui tudo
     public void salvar(Produto produto) {
         dynamoDb.putItem(PutItemRequest.builder()
                 .tableName(TABLE)
@@ -44,6 +46,7 @@ public class ProdutoRepository {
         return fromMap(response.item());
     }
 
+    // Scan le a tabela inteira - nao e o ideal pra tabelas grandes mas pra esse projeto ta bom
     public List<Produto> listarTodos() {
         ScanResponse response = dynamoDb.scan(ScanRequest.builder()
                 .tableName(TABLE)
@@ -66,7 +69,8 @@ public class ProdutoRepository {
                 .build());
     }
 
-    // converte objeto Java para o formato que o DynamoDB entende
+    // o DynamoDB nao aceita objeto Java direto
+    // precisa converter cada campo para AttributeValue com o tipo certo (S = String, N = Number)
     private Map<String, AttributeValue> toMap(Produto p) {
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("id",        AttributeValue.fromS(p.getId()));
@@ -76,7 +80,6 @@ public class ProdutoRepository {
         return item;
     }
 
-    // converte o que veio do DynamoDB de volta para objeto Java
     private Produto fromMap(Map<String, AttributeValue> item) {
         Produto p = new Produto();
         p.setId(item.get("id").s());

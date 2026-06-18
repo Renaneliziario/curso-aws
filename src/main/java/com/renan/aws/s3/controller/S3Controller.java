@@ -1,6 +1,8 @@
-package com.renan.helloworld.controller;
+package com.renan.aws.s3.controller;
 
-import com.renan.helloworld.service.S3Service;
+import com.renan.aws.s3.service.S3Service;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/s3")
+@Tag(name = "S3", description = "Upload, download e listagem de arquivos no Amazon S3")
 public class S3Controller {
 
     private final S3Service service;
@@ -21,48 +24,38 @@ public class S3Controller {
         this.service = service;
     }
 
-    // Listar arquivos e pastas. Ex: GET /s3/list?prefix=Times/
-    // Sem prefix lista a raiz.
+    @Operation(summary = "Listar arquivos", description = "Lista arquivos e pastas. Sem prefix lista a raiz do bucket")
     @GetMapping("/list")
     public ResponseEntity<S3Service.ListResult> list(
-            @RequestParam(value = "prefix", required = false) String prefix
-    ) {
+            @RequestParam(value = "prefix", required = false) String prefix) {
         return ResponseEntity.ok(service.list(prefix));
     }
 
-    // Upload. Ex: POST /s3/upload?prefix=Times/  (prefix opcional)
+    @Operation(summary = "Upload de arquivo", description = "Faz upload de um arquivo para o bucket. Prefix é opcional (ex: Times/)")
     @PostMapping("/upload")
     public ResponseEntity<String> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "prefix", required = false) String prefix
-    ) throws IOException {
+            @RequestParam(value = "prefix", required = false) String prefix) throws IOException {
         service.upload(file, prefix);
         return ResponseEntity.ok("Upload realizado com sucesso");
     }
 
-    // Download/obter conteúdo. Ex: GET /s3/file?key=Times/foo.pdf
+    @Operation(summary = "Download de arquivo", description = "Baixa o arquivo pelo key (ex: Times/foto.png)")
     @GetMapping("/file")
-    public ResponseEntity<InputStreamResource> getFile(
-            @RequestParam("key") String key
-    ) {
+    public ResponseEntity<InputStreamResource> getFile(@RequestParam("key") String key) {
         ResponseInputStream<GetObjectResponse> stream = service.getFile(key);
         GetObjectResponse meta = stream.response();
 
-        String filename = key.contains("/")
-                ? key.substring(key.lastIndexOf('/') + 1)
-                : key;
+        String filename = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(
-                        meta.contentType() != null
-                                ? meta.contentType()
-                                : MediaType.APPLICATION_OCTET_STREAM_VALUE))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + filename + "\"")
+                        meta.contentType() != null ? meta.contentType() : MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .body(new InputStreamResource(stream));
     }
 
-    // Metadados do arquivo. Ex: GET /s3/metadata?key=Times/foo.pdf
+    @Operation(summary = "Metadados do arquivo", description = "Retorna tamanho, tipo e data do arquivo sem baixar")
     @GetMapping("/metadata")
     public ResponseEntity<?> getMetadata(@RequestParam("key") String key) {
         HeadObjectResponse meta = service.getMetadata(key);
@@ -75,11 +68,5 @@ public class S3Controller {
         ));
     }
 
-    public record MetadataResponse(
-            String key,
-            Long sizeBytes,
-            String contentType,
-            String lastModified,
-            String eTag
-    ) {}
+    public record MetadataResponse(String key, Long sizeBytes, String contentType, String lastModified, String eTag) {}
 }

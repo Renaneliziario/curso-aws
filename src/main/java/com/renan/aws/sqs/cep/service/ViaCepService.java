@@ -1,8 +1,8 @@
-package com.renan.helloworld.service;
+package com.renan.aws.sqs.cep.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.renan.helloworld.model.Endereco;
+import com.renan.aws.sqs.cep.model.Endereco;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;

@@ -1,7 +1,7 @@
-package com.renan.helloworld.service;
+package com.renan.aws.dynamodb.produto.service;
 
-import com.renan.helloworld.model.Produto;
-import com.renan.helloworld.repository.ProdutoRepository;
+import com.renan.aws.dynamodb.produto.model.Produto;
+import com.renan.aws.dynamodb.produto.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

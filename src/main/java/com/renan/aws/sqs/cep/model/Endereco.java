@@ -1,6 +1,5 @@
-package com.renan.helloworld.model;
+package com.renan.aws.sqs.cep.model;
 
-// Representa o endereço retornado pela API ViaCEP e salvo no DynamoDB
 public class Endereco {
 
     private String cep;
