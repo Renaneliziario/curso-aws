@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CepService {
 
+    // URL da fila criada no SQS - gerada quando criei a fila pelo terminal
     private static final String QUEUE_URL =
             "https://sqs.us-east-2.amazonaws.com/213180001857/fila-cep";
 
@@ -24,8 +26,6 @@ public class CepService {
         this.enderecoRepository = enderecoRepository;
     }
 
-    // Envia o CEP como mensagem para a fila SQS.
-    // O processamento acontece de forma assíncrona — quem chamou não espera.
     public String enviarCep(String cep) {
         SendMessageResponse response = sqsClient.sendMessage(SendMessageRequest.builder()
                 .queueUrl(QUEUE_URL)
@@ -35,44 +35,49 @@ public class CepService {
         return "CEP enviado para a fila. MessageId: " + response.messageId();
     }
 
-    // Consome mensagens da fila, consulta o ViaCEP e salva no DynamoDB.
-    // Chamado manualmente via endpoint — em produção seria um @Scheduled ou listener.
-    // waitTimeSeconds(5) = Long Polling: aguarda até 5s por mensagens antes de retornar.
-    // Reduz chamadas desnecessárias quando a fila está vazia (mais barato e eficiente).
     public List<String> processarFila() {
         ReceiveMessageRequest request = ReceiveMessageRequest.builder()
                 .queueUrl(QUEUE_URL)
                 .maxNumberOfMessages(10)
+                // waitTimeSeconds e o long polling - espera ate 5s por mensagens
+                // sem isso ele retorna vazio imediatamente mesmo tendo mensagens chegando
                 .waitTimeSeconds(5)
+                // visibilityTimeout - enquanto estou processando a mensagem fica invisivel
+                // pra outros consumers nao pegarem a mesma mensagem ao mesmo tempo
                 .visibilityTimeout(30)
                 .build();
 
         List<Message> messages = sqsClient.receiveMessage(request).messages();
+        List<String> resultados = new ArrayList<>();
 
-        return messages.stream().map(message -> {
+        for (Message message : messages) {
             String cep = message.body();
             try {
                 Endereco endereco = viaCepService.buscar(cep);
                 enderecoRepository.salvar(endereco);
 
-                // Deleta a mensagem da fila após processar com sucesso.
-                // Se não deletar, ela volta para a fila após o visibilityTimeout.
+                // precisa deletar a mensagem depois de processar
+                // se nao deletar ela volta pra fila apos o visibilityTimeout e processa de novo
                 sqsClient.deleteMessage(DeleteMessageRequest.builder()
                         .queueUrl(QUEUE_URL)
                         .receiptHandle(message.receiptHandle())
                         .build());
 
-                return "CEP " + cep + " processado e salvo.";
+                resultados.add("CEP " + cep + " processado e salvo.");
 
             } catch (Exception e) {
-                return "CEP " + cep + " FALHOU: " + e.getMessage();
+                resultados.add("CEP " + cep + " FALHOU: " + e.getMessage());
             }
-        }).toList();
+        }
+
+        return resultados;
     }
 
-    // Busca o endereço salvo no DynamoDB pelo CEP
     public Endereco buscarEndereco(String cep) {
-        return enderecoRepository.buscarPorCep(cep)
-                .orElseThrow(() -> new RuntimeException("CEP não encontrado na base: " + cep));
+        Endereco endereco = enderecoRepository.buscarPorCep(cep);
+        if (endereco == null) {
+            throw new RuntimeException("CEP não encontrado na base: " + cep);
+        }
+        return endereco;
     }
 }

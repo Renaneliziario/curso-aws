@@ -6,16 +6,14 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-// @Repository indica camada de acesso a dados — é um @Component especializado.
-// Aqui ficam todas as operações diretas com o DynamoDB via SDK.
 @Repository
 public class ProdutoRepository {
 
-    // Nome da tabela criada no Console do DynamoDB
     private static final String TABLE = "Produtos";
 
     private final DynamoDbClient dynamoDb;
@@ -24,9 +22,6 @@ public class ProdutoRepository {
         this.dynamoDb = dynamoDb;
     }
 
-    // PutItem — cria ou substitui um item completo na tabela.
-    // No DynamoDB não existe INSERT separado de UPDATE — o PutItem faz os dois.
-    // Se o id já existir, o item é sobrescrito inteiro.
     public void salvar(Produto produto) {
         dynamoDb.putItem(PutItemRequest.builder()
                 .tableName(TABLE)
@@ -34,65 +29,60 @@ public class ProdutoRepository {
                 .build());
     }
 
-    // GetItem — busca um único item pela Partition Key (id).
-    // É a operação mais barata e rápida do DynamoDB — O(1) por chave.
-    // Retorna Optional para forçar o tratamento do caso "não encontrado".
-    public Optional<Produto> buscarPorId(String id) {
+    public Produto buscarPorId(String id) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("id", AttributeValue.fromS(id));
+
         GetItemResponse response = dynamoDb.getItem(GetItemRequest.builder()
                 .tableName(TABLE)
-                .key(Map.of("id", AttributeValue.fromS(id)))
+                .key(key)
                 .build());
 
         if (!response.hasItem() || response.item().isEmpty()) {
-            return Optional.empty();
+            return null;
         }
-        return Optional.of(fromMap(response.item()));
+        return fromMap(response.item());
     }
 
-    // Scan — lê TODOS os itens da tabela. Caro em tabelas grandes pois
-    // percorre partição por partição. Para produção prefira Query com índices.
-    // Para o curso com poucos dados, é suficiente.
     public List<Produto> listarTodos() {
         ScanResponse response = dynamoDb.scan(ScanRequest.builder()
                 .tableName(TABLE)
                 .build());
 
-        return response.items().stream()
-                .map(this::fromMap)
-                .toList();
+        List<Produto> produtos = new ArrayList<>();
+        for (Map<String, AttributeValue> item : response.items()) {
+            produtos.add(fromMap(item));
+        }
+        return produtos;
     }
 
-    // DeleteItem — remove um item pela Partition Key.
-    // O DynamoDB não retorna erro se o id não existir — por isso validamos
-    // a existência antes no Service.
     public void deletar(String id) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("id", AttributeValue.fromS(id));
+
         dynamoDb.deleteItem(DeleteItemRequest.builder()
                 .tableName(TABLE)
-                .key(Map.of("id", AttributeValue.fromS(id)))
+                .key(key)
                 .build());
     }
 
-    // Converte o objeto Java para o formato do DynamoDB.
-    // AttributeValue representa cada campo — o tipo deve bater com o DynamoDB:
-    // fromS = String | fromN = Number | fromBOOL = Boolean | fromL = List
+    // converte objeto Java para o formato que o DynamoDB entende
     private Map<String, AttributeValue> toMap(Produto p) {
-        return Map.of(
-                "id",        AttributeValue.fromS(p.getId()),
-                "nome",      AttributeValue.fromS(p.getNome()),
-                // Números são armazenados como String no DynamoDB internamente —
-                // toPlainString() evita notação científica (ex: 3.5E+3)
-                "preco",     AttributeValue.fromN(p.getPreco().toPlainString()),
-                "descricao", AttributeValue.fromS(p.getDescricao())
-        );
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put("id",        AttributeValue.fromS(p.getId()));
+        item.put("nome",      AttributeValue.fromS(p.getNome()));
+        item.put("preco",     AttributeValue.fromN(p.getPreco().toPlainString()));
+        item.put("descricao", AttributeValue.fromS(p.getDescricao()));
+        return item;
     }
 
-    // Converte o Map do DynamoDB de volta para o objeto Java
+    // converte o que veio do DynamoDB de volta para objeto Java
     private Produto fromMap(Map<String, AttributeValue> item) {
-        return new Produto(
-                item.get("id").s(),
-                item.get("nome").s(),
-                new BigDecimal(item.get("preco").n()),
-                item.get("descricao").s()
-        );
+        Produto p = new Produto();
+        p.setId(item.get("id").s());
+        p.setNome(item.get("nome").s());
+        p.setPreco(new BigDecimal(item.get("preco").n()));
+        p.setDescricao(item.get("descricao").s());
+        return p;
     }
 }

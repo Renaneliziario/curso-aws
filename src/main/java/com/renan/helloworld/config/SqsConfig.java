@@ -13,6 +13,7 @@ public class SqsConfig {
     public SqsClient sqsClient() {
         return SqsClient.builder()
                 .region(Region.US_EAST_2)
+                // mesma logica do DynamoDB - usa a Role da EC2 automaticamente
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
     }

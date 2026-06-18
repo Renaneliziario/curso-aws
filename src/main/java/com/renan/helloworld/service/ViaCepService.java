@@ -10,13 +10,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-// Consulta a API pública ViaCEP para buscar dados de um CEP.
-// Usa o HttpClient nativo do Java 11+ — sem dependência extra.
 @Service
 public class ViaCepService {
 
     private static final String VIA_CEP_URL = "https://viacep.com.br/ws/%s/json/";
 
+    // usando o HttpClient nativo do Java 11+ pra nao precisar de dependencia extra
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -33,7 +32,7 @@ public class ViaCepService {
 
             JsonNode json = objectMapper.readTree(response.body());
 
-            // ViaCEP retorna {"erro": true} quando o CEP não existe
+            // quando o cep nao existe a API retorna {"erro": true} em vez de 404
             if (json.has("erro")) {
                 throw new RuntimeException("CEP não encontrado: " + cep);
             }
@@ -42,7 +41,7 @@ public class ViaCepService {
                     json.get("cep").asText(),
                     json.get("logradouro").asText(),
                     json.get("bairro").asText(),
-                    json.get("localidade").asText(),
+                    json.get("localidade").asText(), // no json e "localidade" mas salvo como cidade
                     json.get("uf").asText()
             );
 

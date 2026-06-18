@@ -5,11 +5,9 @@ import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-// Salva e busca endereços na tabela Enderecos do DynamoDB.
-// A Partition Key é o próprio CEP — busca sempre por CEP exato (GetItem).
 @Repository
 public class EnderecoRepository {
 
@@ -28,35 +26,38 @@ public class EnderecoRepository {
                 .build());
     }
 
-    public Optional<Endereco> buscarPorCep(String cep) {
+    public Endereco buscarPorCep(String cep) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("cep", AttributeValue.fromS(cep));
+
         GetItemResponse response = dynamoDb.getItem(GetItemRequest.builder()
                 .tableName(TABLE)
-                .key(Map.of("cep", AttributeValue.fromS(cep)))
+                .key(key)
                 .build());
 
         if (!response.hasItem() || response.item().isEmpty()) {
-            return Optional.empty();
+            return null;
         }
-        return Optional.of(fromMap(response.item()));
+        return fromMap(response.item());
     }
 
     private Map<String, AttributeValue> toMap(Endereco e) {
-        return Map.of(
-                "cep",         AttributeValue.fromS(e.getCep()),
-                "logradouro",  AttributeValue.fromS(e.getLogradouro()),
-                "bairro",      AttributeValue.fromS(e.getBairro()),
-                "cidade",      AttributeValue.fromS(e.getCidade()),
-                "uf",          AttributeValue.fromS(e.getUf())
-        );
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put("cep",        AttributeValue.fromS(e.getCep()));
+        item.put("logradouro", AttributeValue.fromS(e.getLogradouro()));
+        item.put("bairro",     AttributeValue.fromS(e.getBairro()));
+        item.put("cidade",     AttributeValue.fromS(e.getCidade()));
+        item.put("uf",         AttributeValue.fromS(e.getUf()));
+        return item;
     }
 
     private Endereco fromMap(Map<String, AttributeValue> item) {
-        return new Endereco(
-                item.get("cep").s(),
-                item.get("logradouro").s(),
-                item.get("bairro").s(),
-                item.get("cidade").s(),
-                item.get("uf").s()
-        );
+        Endereco e = new Endereco();
+        e.setCep(item.get("cep").s());
+        e.setLogradouro(item.get("logradouro").s());
+        e.setBairro(item.get("bairro").s());
+        e.setCidade(item.get("cidade").s());
+        e.setUf(item.get("uf").s());
+        return e;
     }
 }
