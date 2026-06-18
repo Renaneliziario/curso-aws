@@ -80,4 +80,30 @@ public class CepService {
         }
         return endereco;
     }
+
+    // espia a fila sem processar - as mensagens voltam pra fila depois
+    public List<String> peek() {
+        ReceiveMessageRequest request = ReceiveMessageRequest.builder()
+                .queueUrl(QUEUE_URL)
+                .maxNumberOfMessages(10)
+                .waitTimeSeconds(2)
+                .build();
+
+        List<Message> messages = sqsClient.receiveMessage(request).messages();
+        List<String> ceps = new ArrayList<>();
+
+        for (Message message : messages) {
+            ceps.add(message.body());
+        }
+
+        return ceps;
+    }
+
+    public void deletarEndereco(String cep) {
+        Endereco existente = enderecoRepository.buscarPorCep(cep);
+        if (existente == null) {
+            throw new RuntimeException("CEP não encontrado na base: " + cep);
+        }
+        enderecoRepository.deletar(cep);
+    }
 }

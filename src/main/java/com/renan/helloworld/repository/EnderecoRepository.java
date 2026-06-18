@@ -41,6 +41,16 @@ public class EnderecoRepository {
         return fromMap(response.item());
     }
 
+    public void deletar(String cep) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("cep", AttributeValue.fromS(cep));
+
+        dynamoDb.deleteItem(DeleteItemRequest.builder()
+                .tableName(TABLE)
+                .key(key)
+                .build());
+    }
+
     private Map<String, AttributeValue> toMap(Endereco e) {
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("cep",        AttributeValue.fromS(e.getCep()));

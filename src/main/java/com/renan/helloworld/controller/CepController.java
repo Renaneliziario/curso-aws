@@ -46,4 +46,23 @@ public class CepController {
     public Endereco buscar(@PathVariable String cep) {
         return cepService.buscarEndereco(cep);
     }
+
+    @Operation(
+        summary = "Espia a fila SQS",
+        description = "Mostra os CEPs que estão aguardando na fila sem processar"
+    )
+    @GetMapping("/peek")
+    public List<String> peek() {
+        return cepService.peek();
+    }
+
+    @Operation(
+        summary = "Deleta endereço por CEP",
+        description = "Remove o endereço salvo no DynamoDB pelo CEP informado"
+    )
+    @DeleteMapping("/{cep}")
+    public ResponseEntity<Void> deletar(@PathVariable String cep) {
+        cepService.deletarEndereco(cep);
+        return ResponseEntity.noContent().build();
+    }
 }
