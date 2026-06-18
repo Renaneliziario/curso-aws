@@ -2,11 +2,20 @@ package com.renan.helloworld.model;
 
 import java.math.BigDecimal;
 
+// Modelo que representa um Produto. No DynamoDB não existe schema fixo —
+// os atributos são definidos pelo código, não pela tabela.
+// Apenas a Partition Key (id) é obrigatória em todos os itens.
 public class Produto {
 
+    // Partition Key da tabela — identifica unicamente cada item no DynamoDB
     private String id;
+
     private String nome;
+
+    // BigDecimal é o tipo correto para valores monetários em Java —
+    // evita erros de arredondamento do double/float
     private BigDecimal preco;
+
     private String descricao;
 
     public Produto() {}
