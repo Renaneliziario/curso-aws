@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/cep")
@@ -25,8 +27,14 @@ public class CepController {
         description = "Coloca o CEP na fila fila-cep do SQS para processamento assíncrono"
     )
     @PostMapping("/{cep}")
-    public ResponseEntity<String> enviar(@PathVariable String cep) {
-        return ResponseEntity.accepted().body(cepService.enviarCep(cep));
+    public ResponseEntity<Map<String, String>> enviar(@PathVariable String cep) {
+        cepService.enviarCep(cep);
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("cep", cep);
+        resposta.put("status", "NA_FILA");
+
+        return ResponseEntity.accepted().body(resposta);
     }
 
     @Operation(
